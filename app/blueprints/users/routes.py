@@ -90,13 +90,17 @@ def update_user(user_id, id):
         return jsonify({"message": "Unauthorized update"}), 403
     
     try: 
-        user_data = user_schema.load(request.json)
+        user_data = user_schema.load(request.json, partial = True)
     except ValidationError as e: 
         return jsonify(e.messages), 400
-    
-    user.name = user_data["name"]
-    user.email = user_data["email"]
-    user.password = user_data["password"]
+    if "name" in user_data: 
+        user.name = user_data["name"]
+    if "email" in user_data: 
+        user.email = user_data["email"]
+    if "password" in user_data: 
+        user.password = user_data["password"]
+    if "role" in user_data: 
+        user.role = user_data["role"]
 
     db.session.commit()
     return user_schema.jsonify(user), 200
