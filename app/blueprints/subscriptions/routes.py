@@ -17,7 +17,10 @@ def create_subscription(user_id):
     except ValidationError as e: 
         return jsonify(e.messages), 400
    
-    new_subscription.user_id = user_id
+    current_user = db.session.get(User, user_id)
+
+    if current_user.role.lower() != "admin": 
+        new_subscription.user_id = user_id
     
     db.session.add(new_subscription)
     db.session.commit()
@@ -66,13 +69,17 @@ def update_subscription(user_id, id):
         return jsonify({"message": "Unauthorized update"}), 403
 
     try: 
-        updated_subscription = subscription_schema.load(request.json)
+        subscription_schema.load(request.json, partial = True)
     except ValidationError as e: 
         return jsonify(e.messages), 400
-    
-    subscription.status = updated_subscription.status
-    subscription.start_date = updated_subscription.start_date
-    subscription.plan_id = updated_subscription.plan_id
+    data = request.json
+
+    if "status" in data: 
+        subscription.status = data["status"]
+    if "start_date" in data:
+        subscription.start_date = data["start_date"]
+    if "plan_id" in data: 
+        subscription.plan_id = data["plan_id"]
 
     db.session.commit()
     return subscription_schema.jsonify(subscription), 200
