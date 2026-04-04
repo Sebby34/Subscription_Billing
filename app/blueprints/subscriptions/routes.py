@@ -29,7 +29,7 @@ def create_subscription(user_id):
 def get_subscriptions(user_id): 
     current_user = db.session.get(User, user_id)
 
-    if current_user.role != "admin": 
+    if current_user.role.lower() != "admin": 
         return jsonify({"message": "Unauthorized access"}), 403
 
     query = select(Subscription)
@@ -47,7 +47,7 @@ def get_subscription(user_id, id):
     
     current_user = db.session.get(User, user_id)
 
-    if current_user.role != "admin" and subscription.user_id != int(user_id): 
+    if current_user.role.lower() != "admin" and subscription.user_id != int(user_id): 
         return jsonify({"message": "Unauthorized access"}), 403
     
     return subscription_schema.jsonify(subscription), 200
@@ -62,7 +62,7 @@ def update_subscription(user_id, id):
     
     current_user = db.session.get(User, user_id)
 
-    if current_user.role != "admin" and subscription.user_id != int(user_id): 
+    if current_user.role.lower() != "admin" and subscription.user_id != int(user_id): 
         return jsonify({"message": "Unauthorized update"}), 403
 
     try: 
@@ -88,7 +88,7 @@ def delete_subscription(user_id, id):
     
     current_user = db.session.get(User, user_id)
 
-    if current_user.role != "admin" and subscription.user_id != int(user_id): 
+    if current_user.role.lower() != "admin" and subscription.user_id != int(user_id): 
         return jsonify({"message": "Unauthorized deletion"}), 403
     
     db.session.delete(subscription)

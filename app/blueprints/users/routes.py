@@ -30,7 +30,7 @@ def login():
         }
         return jsonify(response), 200
     else: 
-        return jsonify({"message": "invalid email or password"}), 404
+        return jsonify({"message": "Invalid email or password!"}), 404
 
 @users_bp.route("/", methods = ["POST"])
 @limiter.limit("10 per minute")
@@ -52,7 +52,7 @@ def create_user():
 def get_users(user_id): 
     current_user = db.session.get(User, user_id)
 
-    if current_user.role != "admin": 
+    if current_user.role.lower() != "admin": 
         return jsonify({"message": "Unauthorized access"}), 403
     
     query = select(User)
@@ -70,7 +70,7 @@ def get_user(user_id, id):
         return jsonify({"message": "Invalid user id"}), 404
     
     current_user = db.session.get(User, user_id)
-    if current_user.role != "admin" and user_id != id: 
+    if current_user.role.lower() != "admin" and user_id != id: 
         return jsonify({"message": "Unauthorized access"}), 403
     
     return user_schema.jsonify(user), 200
@@ -86,7 +86,7 @@ def update_user(user_id, id):
     
     current_user = db.session.get(User, user_id)
 
-    if current_user.role != "admin" and user_id != id: 
+    if current_user.role.lower() != "admin" and user_id != id: 
         return jsonify({"message": "Unauthorized update"}), 403
     
     try: 
@@ -111,7 +111,7 @@ def delete_user(user_id, id):
     if not user_to_delete: 
         return jsonify({"message": "Invalid user id"}), 404
     
-    if current_user.role != "admin" and user_to_delete.id != user_id: 
+    if current_user.role.lower() != "admin" and user_to_delete.id != user_id: 
         return jsonify({"message": "Unauthorized deletion"}), 403
     
     db.session.delete(user_to_delete)

@@ -14,7 +14,7 @@ from app.utils.util import token_required
 def create_plan(user_id): 
     current_user = db.session.get(User, user_id)
     
-    if current_user.role != "admin": 
+    if current_user.role.lower() != "admin": 
         return jsonify({"message": "Admin only"}), 403
     
     try: 
@@ -55,7 +55,7 @@ def get_plan(user_id, id):
 def update_plan(user_id, id): 
     current_user = db.session.get(User, user_id)
     
-    if current_user.role != "admin": 
+    if current_user.role.lower() != "admin": 
         return jsonify({"message": "Admin only"}), 403
 
     plan = db.session.get(Plan, id)
@@ -81,7 +81,7 @@ def update_plan(user_id, id):
 def delete_plan(user_id, id): 
     current_user = db.session.get(User, user_id)
     
-    if current_user.role != "admin": 
+    if current_user.role.lower() != "admin": 
         return jsonify({"message": "Admin only"}), 403
 
     plan = db.session.get(Plan, id)
