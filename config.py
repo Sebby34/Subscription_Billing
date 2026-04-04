@@ -7,7 +7,11 @@ class DevelopmentConfig:
     SECRET_KEY = os.getenv("SECRET_KEY")
 
 class TestingConfig: 
-    pass 
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory"
+    TESTING = True 
+    DEBUG = True
+    CACHE_TYPE = "SimpleCache"
+    SECRET_KEY = "testsecret123"
 
 class ProductionConfig: 
     pass 
