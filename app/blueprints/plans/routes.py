@@ -64,13 +64,16 @@ def update_plan(user_id, id):
         return jsonify({"message": "Invalid plan id"}), 404
     
     try: 
-        plan_data = plan_schema.load(request.json)
+        plan_data = plan_schema.load(request.json, partial = True)
     except ValidationError as e: 
         return jsonify(e.messages), 400
     
-    plan.name = plan_data["name"]
-    plan.price = plan_data["price"]
-    plan.billing_cycle = plan_data["billing_cycle"]
+    if "name" in plan_data: 
+        plan.name = plan_data["name"]
+    if "price" in plan_data:
+        plan.price = plan_data["price"]
+    if "billing_cycle" in plan_data:
+        plan.billing_cycle = plan_data["billing_cycle"]
 
     db.session.commit()
     return plan_schema.jsonify(plan), 200
