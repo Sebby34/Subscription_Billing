@@ -47,8 +47,8 @@ def create_user():
     return user_schema.jsonify(new_user), 201
 
 @users_bp.route("/", methods = ["GET"])
-@cache.cached(timeout = 60)
 @token_required 
+@cache.cached(timeout = 60)
 def get_users(user_id): 
     current_user = db.session.get(User, user_id)
 
@@ -61,8 +61,8 @@ def get_users(user_id):
     return users_schema.jsonify(users), 200
 
 @users_bp.route("/<int:id>", methods = ["GET"])
-@cache.cached(timeout = 60)
 @token_required
+@cache.cached(timeout = 60)
 def get_user(user_id, id): 
     user = db.session.get(User, id)
 

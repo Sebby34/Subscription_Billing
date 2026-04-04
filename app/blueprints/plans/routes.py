@@ -2,18 +2,25 @@ from app.blueprints.plans import plans_bp
 from app.blueprints.plans.schemas import plan_schema, plans_schema 
 from flask import request, jsonify 
 from marshmallow import ValidationError
-from app.models import Plan, db 
+from app.models import Plan, db, User 
 from sqlalchemy import select 
 from app.extensions import limiter, cache 
+from app.utils.util import token_required
 
 
 @plans_bp.route("/", methods = ["POST"])
 @limiter.limit("5 per minute")
-def create_plan(): 
+@token_required 
+def create_plan(user_id): 
+    current_user = db.session.get(User, user_id)
+    
+    if current_user.role != "admin": 
+        return jsonify({"message": "Admin only"}), 403
+    
     try: 
         plan_data = plan_schema.load(request.json)
     except ValidationError as e: 
-        return jsonify(e.messages), 404
+        return jsonify(e.messages), 400
 
     new_plan = Plan(name = plan_data["name"], price = plan_data["price"], 
                     billing_cycle = plan_data["billing_cycle"])
@@ -23,16 +30,18 @@ def create_plan():
     return plan_schema.jsonify(new_plan), 201
 
 @plans_bp.route("/", methods = ["GET"])
+@token_required
 @cache.cached(timeout = 60)
-def get_plans(): 
+def get_plans(user_id): 
     query = select(Plan)
     plans = db.session.execute(query).scalars().all()
 
     return plans_schema.jsonify(plans), 200
 
 @plans_bp.route("/<int:id>", methods = ["GET"])
+@token_required
 @cache.cached(timeout = 60)
-def get_plan(id): 
+def get_plan(user_id, id): 
     plan = db.session.get(Plan, id)
 
     if not plan: 
@@ -42,7 +51,13 @@ def get_plan(id):
 
 @plans_bp.route("/<int:id>", methods = ["PUT"])
 @limiter.limit("10 per minute")
-def update_plan(id): 
+@token_required
+def update_plan(user_id, id): 
+    current_user = db.session.get(User, user_id)
+    
+    if current_user.role != "admin": 
+        return jsonify({"message": "Admin only"}), 403
+
     plan = db.session.get(Plan, id)
 
     if not plan: 
@@ -51,7 +66,7 @@ def update_plan(id):
     try: 
         plan_data = plan_schema.load(request.json)
     except ValidationError as e: 
-        return jsonify(e.messages), 404
+        return jsonify(e.messages), 400
     
     plan.name = plan_data["name"]
     plan.price = plan_data["price"]
@@ -62,7 +77,13 @@ def update_plan(id):
 
 @plans_bp.route("/<int:id>", methods = ["DELETE"])
 @limiter.limit("5 per minute")
-def delete_plan(id): 
+@token_required
+def delete_plan(user_id, id): 
+    current_user = db.session.get(User, user_id)
+    
+    if current_user.role != "admin": 
+        return jsonify({"message": "Admin only"}), 403
+
     plan = db.session.get(Plan, id)
 
     if not plan: 
