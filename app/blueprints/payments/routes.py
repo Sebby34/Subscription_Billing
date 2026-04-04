@@ -15,7 +15,7 @@ def create_payment(user_id):
     try: 
         new_payment = payment_schema.load(request.json)
     except ValidationError as e: 
-        return jsonify(e.messages), 404
+        return jsonify(e.messages), 400
     
     new_payment.user_id = user_id
 

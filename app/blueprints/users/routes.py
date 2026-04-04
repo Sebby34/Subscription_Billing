@@ -15,7 +15,7 @@ def login():
         email = credentials["email"]
         password = credentials["password"]
     except ValidationError as e: 
-        return jsonify(e.messages), 404
+        return jsonify(e.messages), 400
     
     query = select(User).where(User.email == email)
     user = db.session.execute(query).scalars().first()
@@ -38,7 +38,7 @@ def create_user():
     try: 
         user_data = user_schema.load(request.json)
     except ValidationError as e: 
-        return jsonify(e.messages), 404
+        return jsonify(e.messages), 400
 
     new_user = User(name = user_data["name"], email = user_data["email"], password = user_data["password"], role = user_data["role"])
     db.session.add(new_user)
