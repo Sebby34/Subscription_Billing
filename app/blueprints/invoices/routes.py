@@ -29,17 +29,24 @@ def create_invoice(user_id):
 
 @invoices_bp.route("/", methods = ["GET"])
 @token_required
-@cache.cached(timeout = 60)
+@cache.cached(timeout = 60, query_string = True)
 def get_invoices(user_id): 
     current_user = db.session.get(User, user_id)
     
     if current_user.role.lower() != "admin": 
         return jsonify({"message": "Admin only"}), 403
 
-    query = select(Invoice)
-    invoices = db.session.execute(query).scalars().all()
+    try: 
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        query = select(Invoice)
+        invoices = db.paginate(query, page = page, per_page = per_page)
+        return invoices_schema.jsonify(invoices), 200
+    except Exception as e: 
+        query = select(Invoice)
+        invoices = db.session.execute(query).scalars().all()
 
-    return invoices_schema.jsonify(invoices), 200
+        return invoices_schema.jsonify(invoices), 200
 
 @invoices_bp.route("/<int:id>", methods = ["GET"])
 @token_required

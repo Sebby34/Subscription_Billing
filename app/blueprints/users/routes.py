@@ -48,17 +48,25 @@ def create_user():
 
 @users_bp.route("/", methods = ["GET"])
 @token_required 
-@cache.cached(timeout = 60)
+@cache.cached(timeout = 60, query_string = True)
 def get_users(user_id): 
     current_user = db.session.get(User, user_id)
 
     if current_user.role.lower() != "admin": 
         return jsonify({"message": "Unauthorized access"}), 403
     
-    query = select(User)
-    users = db.session.execute(query).scalars().all()
+    try: 
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        query = select(User)
+        users = db.paginate(query, page = page, per_page = per_page)
+        return users_schema.jsonify(users), 200
+    
+    except Exception as e: 
+        query = select(User)
+        users = db.session.execute(query).scalars().all()
 
-    return users_schema.jsonify(users), 200
+        return users_schema.jsonify(users), 200
 
 @users_bp.route("/<int:id>", methods = ["GET"])
 @token_required

@@ -26,17 +26,24 @@ def create_payment(user_id):
 
 @payments_bp.route("/", methods = ["GET"])
 @token_required
-@cache.cached(timeout = 60)
+@cache.cached(timeout = 60, query_string = True)
 def get_payments(user_id): 
     current_user = db.session.get(User, user_id)
     
     if current_user.role.lower() != "admin": 
         return jsonify({"message": "Admin only"}), 403
 
-    query = select(Payment)
-    payments = db.session.execute(query).scalars().all()
+    try: 
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        query = select(Payment)
+        payments = db.paginate(query, page = page, per_page = per_page)
+        return payments_schema.jsonify(payments), 200
+    except Exception as e: 
+        query = select(Payment)
+        payments = db.session.execute(query).scalars().all()
 
-    return payments_schema.jsonify(payments), 200
+        return payments_schema.jsonify(payments), 200
 
 @payments_bp.route("/<int:id>", methods = ["GET"])
 @token_required

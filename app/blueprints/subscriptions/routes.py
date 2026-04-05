@@ -35,10 +35,18 @@ def get_subscriptions(user_id):
     if current_user.role.lower() != "admin": 
         return jsonify({"message": "Unauthorized access"}), 403
 
-    query = select(Subscription)
-    subscriptions = db.session.execute(query).scalars().all()
+    try: 
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        query = select(Subscription)
+        subscriptions = db.paginate(query, page = page, per_page = per_page)
+        return subscriptions_schema.jsonify(subscriptions), 200
+    
+    except Exception as e: 
+        query = select(Subscription)
+        subscriptions = db.session.execute(query).scalars().all()
 
-    return subscriptions_schema.jsonify(subscriptions), 200
+        return subscriptions_schema.jsonify(subscriptions), 200
 
 @subscriptions_bp.route("/<int:id>", methods = ["GET"])
 @token_required

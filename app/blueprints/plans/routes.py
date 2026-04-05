@@ -31,12 +31,20 @@ def create_plan(user_id):
 
 @plans_bp.route("/", methods = ["GET"])
 @token_required
-@cache.cached(timeout = 60)
+@cache.cached(timeout = 60, query_string = True)
 def get_plans(user_id): 
-    query = select(Plan)
-    plans = db.session.execute(query).scalars().all()
+    try: 
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        query = select(Plan)
+        plans = db.paginate(query, page = page, per_page = per_page)
+        return plans_schema.jsonify(plans), 200
+    
+    except Exception as e: 
+        query = select(Plan)
+        plans = db.session.execute(query).scalars().all()
 
-    return plans_schema.jsonify(plans), 200
+        return plans_schema.jsonify(plans), 200
 
 @plans_bp.route("/<int:id>", methods = ["GET"])
 @token_required
