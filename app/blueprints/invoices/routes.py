@@ -52,7 +52,7 @@ def get_invoice(user_id, id):
     
     current_user = db.session.get(User, user_id)
 
-    if current_user.role.lower() != "admin" and invoice.user_id != int(user_id): 
+    if current_user.role.lower() != "admin" and invoice.subscription.user_id != int(user_id): 
         return jsonify({"message": "Unauthorized access"}), 403
     
     return invoice_schema.jsonify(invoice), 200

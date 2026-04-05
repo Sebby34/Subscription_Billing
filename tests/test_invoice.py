@@ -1,10 +1,10 @@
 from app import create_app
-from app.models import db, User, Plan, Subscription, Payment 
+from app.models import db, User, Plan, Subscription, Invoice
 from app.utils.util import encode_token
 import unittest 
 from datetime import date
 
-class TestPayment(unittest.TestCase): 
+class TestInvoice(unittest.TestCase): 
 
     def setUp(self): 
         self.app = create_app("TestingConfig")
@@ -59,94 +59,88 @@ class TestPayment(unittest.TestCase):
             db.session.commit()
             self.subscription_id = self.subscription.id
 
-            self.payment = Payment(
+            self.invoice = Invoice(
                 subscription_id = self.subscription.id,
                 amount = self.plan.price,
-                payment_date = date(2026, 4, 5)
+                issued_date = date(2026, 4, 5)
             )
 
-            db.session.add(self.payment)
+            db.session.add(self.invoice)
             db.session.commit()
-            self.payment_id = self.payment.id
+            self.invoice_id = self.invoice.id
 
     def tearDown(self): 
         with self.app.app_context(): 
             db.session.remove()
             db.drop_all()
 
-    def test_create_payment_admin(self):
+    def test_create_invoice_admin(self):
         headers = {
             "Authorization": f"Bearer {self.admin_token}"
         }
         payload = {
             "subscription_id": self.subscription_id,
             "amount": self.plan_price,
-            "payment_date": "2026-04-05"
+            "issued_date": "2026-04-05"
         }
-        response = self.client.post("/payments/", json = payload, headers = headers)
+        response = self.client.post("/invoices/", json = payload, headers = headers)
 
         self.assertEqual(response.status_code, 201)
 
         json_data = response.get_json()
         self.assertEqual(json_data["subscription_id"], self.subscription_id)
         self.assertEqual(json_data["amount"], self.plan_price)
-        self.assertTrue(json_data["payment_date"].startswith("2026-04-05"))
-
-    def test_create_payment_user_valid(self): 
+        self.assertTrue(json_data["issued_date"].startswith("2026-04-05"))
+    
+    def test_create_invoice_user_unauthorized(self):
         headers = {
             "Authorization": f"Bearer {self.user_token}"
         }
         payload = {
             "subscription_id": self.subscription_id,
             "amount": self.plan_price,
-            "payment_date": "2026-04-05"
+            "issued_date": "2026-04-05"
         }
-        response = self.client.post("/payments/", json = payload, headers = headers)
+        response = self.client.post("/invoices/", json = payload, headers = headers)
 
-        self.assertEqual(response.status_code, 201)
-
+        self.assertEqual(response.status_code, 403)
         json_data = response.get_json()
-        self.assertEqual(json_data["subscription_id"], self.subscription_id)
-        self.assertEqual(json_data["amount"], self.plan_price)
-        self.assertTrue(json_data["payment_date"].startswith("2026-04-05"))
-
-    def test_get_all_payments_admin(self): 
+        self.assertIn("Admin only", json_data["message"])
+    
+    def test_get_all_invoices_admin(self): 
         headers = {
             "Authorization": f"Bearer {self.admin_token}"
         }
-        response = self.client.get(f"/payments/", headers = headers)
+        response = self.client.get(f"/invoices/", headers = headers)
         self.assertEqual(response.status_code, 200)
         json_data = response.get_json()
         self.assertIsInstance(json_data, list)
         self.assertGreaterEqual(len(json_data), 1)
         self.assertEqual(json_data[0]["amount"], self.plan_price)
     
-    def test_get_all_payments_user_unauthorized(self): 
+    def test_get_all_invoices_user_unauthorized(self): 
         headers = {
             "Authorization": f"Bearer {self.user_token}"
         }
-        response = self.client.get(f"/payments/", headers = headers)
+        response = self.client.get(f"/invoices/", headers = headers)
         self.assertEqual(response.status_code, 403)
         json_data = response.get_json()
         self.assertIn("Admin only", json_data["message"])
 
-    def test_get_payment_admin(self): 
+    def test_get_invoice_admin(self): 
         headers = {
             "Authorization": f"Bearer {self.admin_token}"
         }
-        response = self.client.get(f"/payments/{self.payment_id}", headers = headers)
+        response = self.client.get(f"/invoices/{self.invoice_id}", headers = headers)
         self.assertEqual(response.status_code, 200)
         json_data = response.get_json()
         self.assertEqual(json_data["amount"], self.plan_price)
-   
-    def test_get_payment_user_valid(self): 
+    
+    def test_get_invoice_user_valid(self): 
         headers = {
             "Authorization": f"Bearer {self.user_token}"
         }
-        response = self.client.get(f"/payments/{self.payment_id}", headers = headers)
+        response = self.client.get(f"/invoices/{self.invoice_id}", headers = headers)
         self.assertEqual(response.status_code, 200)
         json_data = response.get_json()
         self.assertEqual(json_data["amount"], self.plan_price)
-
-
-    
