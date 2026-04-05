@@ -49,7 +49,7 @@ def get_payment(user_id, id):
     
     current_user = db.session.get(User, user_id)
 
-    if current_user.role.lower() != "admin" and payment.user_id != int(user_id): 
+    if current_user.role.lower() != "admin" and payment.subscription.user_id != int(user_id): 
         return jsonify({"message": "Unauthorized access"}), 403
     
     return payment_schema.jsonify(payment), 200

@@ -1,5 +1,5 @@
 from app import create_app
-from app.models import db, User, Subscription, Plan 
+from app.models import db, User, Plan 
 from app.utils.util import encode_token
 import unittest 
 
