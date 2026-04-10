@@ -1,0 +1,286 @@
+swagger: "2.0"
+info: 
+  title: "SubscriptionBilling"
+  description: "This is an API to manage subscription billing"
+  version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes: 
+  - "http"
+consumes: 
+  - "application/json"
+produces: 
+  - "application/json"
+securityDefinitions: 
+  bearerAuth: 
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths: 
+
+  /users/login: 
+    post:
+      tags: 
+        - Users 
+      summary: "Login endpoint, (generates token)"
+      description: "Validates user credentials, generates and returns a role specific token."
+      parameters: 
+        - in: "body"
+          name: "body"
+          description: "Login Credentials"
+          required: true
+          schema: 
+            $ref: "#/definitions/LoginCredentials"
+      responses: 
+        201: 
+          description: "Login successful"
+          schema: 
+            $ref: "#/definitions/LoginResponse"
+          examples: 
+            application/json: 
+              token: "sjkdhcshcyg734yrshdcb..."
+              message: "Login successful"
+              status: "success"
+
+  /users: 
+    post: 
+      tags: 
+        - Users 
+      summary: "Endpoint to create/register a new user"
+      description: "Endpoint to create a new user in SubscriptionBilling, emails must be unique"
+      parameters: 
+        - in: "body"
+          name: "body"
+          description: "Information required to create a new user"
+          required: true
+          schema: 
+            $ref: "#/definitions/CreateUserPayload"
+      responses: 
+        201: 
+          description: "Successful User Creation"
+          schema: 
+            $ref: "#/definitions/CreateUserResponse"
+          examples: 
+            application/json: 
+              id: 1
+              name: "John Doe"
+              email: "jd@gmail.com"
+              role: "admin"
+    get: 
+      tags: 
+        - Users 
+      summary: "Endpoint to get all users"
+      description: "Returns paginated list of all users, token authenticated (Admin only)"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "query"
+          name: "page"
+          type: "integer"
+          required: false
+          default: 1
+          description: "Page number" 
+        
+        - in: "query"
+          name: "per_page"
+          type: "integer"
+          required: false
+          default: 10
+          description: "Number of users per page" 
+      responses: 
+        200: 
+          description: "Retrieved users successfully"
+          schema: 
+            $ref: "#/definitions/AllUsers"
+
+  /users/{id}:
+
+    get: 
+      tags: 
+        - Users 
+      summary: "Endpoint to get a specific user"
+      description: "Returns a single user by ID, token authenticated, must be admin or the user themselves"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "User ID" 
+      responses: 
+        200: 
+          description: "Retrieved user successfully"
+          schema: 
+            $ref: "#/definitions/GetUserResponse"
+          examples: 
+            aplication/json: 
+              id: 1
+              name: "John Doe" 
+              email: "johndoe@gmail.com"
+              role: "user"
+
+    put: 
+      tags: 
+        - Users 
+      summary: "Endpoint to update a user"
+      description: "Endpoint to update a user, token authenticated, must be admin or user updating their own account"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "User ID" 
+
+        - in: "body"
+          name: "body"
+          description: "Information required to update a user"
+          required: true
+          schema: 
+            $ref: "#/definitions/UpdateUserPayload"
+      responses: 
+        200: 
+          description: "Successfully updated user"
+          schema: 
+            $ref: "#/definitions/UpdateUserResponse"
+          examples: 
+            application/json: 
+              id: 1
+              name: Jane Doe
+              email: janedoe123@gmail.com
+              role: user 
+
+    delete: 
+      tags: 
+        - Users 
+      summary: "Endpoint to delete a user"
+      description: "Endpoint to delete a user, token authenticated, must be admin or deleting their own account"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "User ID" 
+      responses: 
+        200: 
+          description: "Successfully deleted user"
+          schema: 
+            $ref: "#/definitions/DeleteUserResponse"
+          examples: 
+            application/json: 
+              message: "Successfully deleted user <user_id>"
+
+definitions: 
+
+  LoginCredentials: 
+    type: "object"
+    properties: 
+      email: 
+        type: "string"
+      password: 
+        type: "string"
+    
+    required: 
+      - email 
+      - password 
+  
+  LoginResponse: 
+    type: "object"
+    properties: 
+      token: 
+        type: "string"
+      message: 
+        type: "string"
+      status: 
+        type: "string"
+  
+  CreateUserPayload: 
+    type: "object"
+    properties: 
+      name: 
+        type: "string"
+      email:
+        type: "string"
+      password: 
+        type: "string"
+      role: 
+        type: "string"
+    
+    required: 
+      - name
+      - email 
+      - password 
+      - role 
+  
+  CreateUserResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      name:
+        type: "string"
+      email: 
+        type: "string"
+      role: 
+        type: "string"
+
+  AllUsers: 
+    type: "array"
+    items: 
+      type: "object"
+      properties: 
+        id: 
+          type: "integer"
+        name: 
+          type: "string"
+        email: 
+          type: "string"
+        role: 
+          type: "string"
+
+  GetUserResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      name:
+        type: "string"
+      email: 
+        type: "string"
+      role: 
+        type: "string"
+
+  UpdateUserPayload: 
+    type: "object"
+    properties: 
+      name: 
+        type: "string"
+      email:
+        type: "string"
+      password: 
+        type: "string"
+      role: 
+        type: "string"
+  
+  UpdateUserResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      name:
+        type: "string"
+      email: 
+        type: "string"
+      role: 
+        type: "string"
+  
+  DeleteUserResponse: 
+    type: "object"
+    properties: 
+      message: 
+        type: "string"
+  
