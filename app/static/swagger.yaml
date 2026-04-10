@@ -43,6 +43,7 @@ paths:
               status: "success"
 
   /users: 
+    
     post: 
       tags: 
         - Users 
@@ -114,7 +115,7 @@ paths:
           schema: 
             $ref: "#/definitions/GetUserResponse"
           examples: 
-            aplication/json: 
+            application/json: 
               id: 1
               name: "John Doe" 
               email: "johndoe@gmail.com"
@@ -173,6 +174,144 @@ paths:
           examples: 
             application/json: 
               message: "Successfully deleted user <user_id>"
+
+  /subscriptions: 
+        
+    post: 
+      tags: 
+        - Subscriptions 
+      summary: "Endpoint to create a new subscription"
+      description: "Endpoint to create a new subscription, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "body"
+          name: "body"
+          description: "Information required to create a new subscription"
+          required: true
+          schema: 
+            $ref: "#/definitions/CreateSubscriptionPayload"
+      responses: 
+        201: 
+          description: "Successful Subscription Creation"
+          schema: 
+            $ref: "#/definitions/CreateSubscriptionResponse"
+          examples: 
+            application/json: 
+              id: 1
+              user_id: 1
+              plan_id: 1
+              status: "active"
+              start_date: "2026-04-10"
+
+    get: 
+      tags: 
+        - Subscriptions 
+      summary: "Endpoint to get all subscriptions"
+      description: "Returns paginated list of all subscriptions, token authenticated (Admin only)"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "query"
+          name: "page"
+          type: "integer"
+          required: false
+          default: 1
+          description: "Page number" 
+        
+        - in: "query"
+          name: "per_page"
+          type: "integer"
+          required: false
+          default: 10
+          description: "Number of subscriptions per page" 
+      responses: 
+        200: 
+          description: "Retrieved subscriptions successfully"
+          schema: 
+            $ref: "#/definitions/AllSubscriptions"
+
+  /subscriptions/{id}: 
+    get: 
+      tags: 
+        - Subscriptions 
+      summary: "Endpoint to get a specific subscription"
+      description: "Returns a single subscription by ID, token authenticated, must be admin or the user themselves"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Subscription ID" 
+      responses: 
+        200: 
+          description: "Retrieved subscription successfully"
+          schema: 
+            $ref: "#/definitions/GetSubscriptionResponse"
+          examples: 
+            application/json: 
+              id: 1
+              user_id: 2
+              plan_id: 1
+              status: "active"
+              start_date: "2026-04-10"
+
+    put: 
+      tags: 
+        - Subscriptions 
+      summary: "Endpoint to update a subscription"
+      description: "Endpoint to update a subscription, token authenticated, must be admin or user updating their own account"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Subscription ID" 
+
+        - in: "body"
+          name: "body"
+          description: "Information required to update a subscription"
+          required: true
+          schema: 
+            $ref: "#/definitions/UpdateSubscriptionPayload"
+      responses: 
+        200: 
+          description: "Successfully updated subscription"
+          schema: 
+            $ref: "#/definitions/UpdateSubscriptionResponse"
+          examples: 
+            application/json: 
+              id: 1
+              user_id: 2
+              plan_id: 1
+              status: "Inactive"
+              start_date: "2026-04-10" 
+
+    delete: 
+      tags: 
+        - Subscriptions 
+      summary: "Endpoint to delete a subscription"
+      description: "Endpoint to delete a subscription, token authenticated, must be admin or deleting their own subscription"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Subscription ID" 
+      responses: 
+        200: 
+          description: "Successfully deleted subscription"
+          schema: 
+            $ref: "#/definitions/DeleteSubscriptionResponse"
+          examples: 
+            application/json: 
+              message: "Successfully deleted subscription <subscription_id>"
 
 definitions: 
 
@@ -283,4 +422,105 @@ definitions:
     properties: 
       message: 
         type: "string"
+
+  CreateSubscriptionPayload: 
+    type: "object"
+    properties: 
+      user_id:
+        type: "integer"
+      plan_id: 
+        type: "integer"
+      status: 
+        type: "string"
+      start_date: 
+        type: "string"
+        format: "date"
+    
+    required: 
+      - user_id
+      - plan_id 
+      - status
+      - start_date 
+  
+  CreateSubscriptionResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      user_id:
+        type: "integer"
+      plan_id: 
+        type: "integer"
+      status: 
+        type: "string"
+      start_date: 
+        type: "string"
+        format: "date"
+  
+  AllSubscriptions: 
+    type: "array"
+    items: 
+      type: "object"
+      properties: 
+        id: 
+          type: "integer"
+        user_id: 
+          type: "integer"
+        plan_id: 
+          type: "integer"
+        status: 
+          type: "string"
+        start_date: 
+          type: "string"
+          format: "date"
+  
+  GetSubscriptionResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      user_id:
+        type: "integer"
+      plan_id: 
+        type: "integer"
+      status: 
+        type: "string"
+      start_date: 
+        type: "string"
+        format: "date"
+  
+  UpdateSubscriptionPayload: 
+    type: "object"
+    properties: 
+      user_id:
+        type: "integer"
+      plan_id: 
+        type: "integer"
+      status: 
+        type: "string"
+      start_date: 
+        type: "string"
+        format: "date"
+
+  UpdateSubscriptionResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      user_id:
+        type: "integer"
+      plan_id: 
+        type: "integer"
+      status: 
+        type: "string"
+      start_date: 
+        type: "string"
+        format: "date"
+  
+  DeleteSubscriptionResponse: 
+    type: "object"
+    properties: 
+      message: 
+        type: "string"
+  
   
