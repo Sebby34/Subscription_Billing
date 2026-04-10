@@ -450,6 +450,87 @@ paths:
           examples: 
             application/json: 
               message: "Successfully deleted plan <plan_id>"
+  /payments: 
+    
+    post: 
+      tags: 
+        - Payments 
+      summary: "Endpoint to create a new payment"
+      description: "Endpoint to create a new payment, token authenticated, must be logged in"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "body"
+          name: "body"
+          description: "Information required to create a new payment"
+          required: true
+          schema: 
+            $ref: "#/definitions/CreatePaymentPayload"
+      responses: 
+        201: 
+          description: "Successful Payment Creation"
+          schema: 
+            $ref: "#/definitions/CreatePaymentResponse"
+          examples: 
+            application/json: 
+              id: 1
+              subscription_id: 1
+              amount: 75.00
+              payment_date: "2026-04-10"
+
+    get: 
+      tags: 
+        - Payments 
+      summary: "Endpoint to get all payments"
+      description: "Returns paginated list of all payments, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "query"
+          name: "page"
+          type: "integer"
+          required: false
+          default: 1
+          description: "Page number" 
+        
+        - in: "query"
+          name: "per_page"
+          type: "integer"
+          required: false
+          default: 10
+          description: "Number of payments per page" 
+      responses: 
+        200: 
+          description: "Retrieved payments successfully"
+          schema: 
+            $ref: "#/definitions/AllPayments"
+
+  /payments/{id}: 
+    
+    get: 
+      tags: 
+        - Payments 
+      summary: "Endpoint to get a specific payment"
+      description: "Returns a single payment by ID, token authenticated, must be admin or accessing their own payment"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Payment ID" 
+      responses: 
+        200: 
+          description: "Retrieved payment successfully"
+          schema: 
+            $ref: "#/definitions/GetPaymentResponse"
+          examples: 
+            application/json: 
+              id: 1
+              subscription_id: 1
+              amount: 75.00
+              payment_date: "2026-04-10"
 
 definitions: 
 
@@ -747,3 +828,64 @@ definitions:
     properties: 
       message: 
         type: "string"
+  
+  CreatePaymentPayload: 
+    type: "object"
+    properties: 
+      subscription_id: 
+        type: "integer"
+      amount:
+        type: "number"
+        format: "float"
+      payment_date: 
+        type: "string"
+        format: "date"
+    
+    required: 
+      - subscription_id
+      - amount
+      - payment_date 
+  
+  CreatePaymentResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      subscription_id: 
+        type: "integer"
+      amount:
+        type: "number"
+        format: "float"
+      payment_date: 
+        type: "string"
+        format: "date"
+
+  AllPayments: 
+    type: "array"
+    items: 
+      type: "object"
+      properties: 
+        id: 
+          type: "integer"
+        subscription_id: 
+          type: "integer"
+        amount:
+          type: "number"
+          format: "float"
+        payment_date: 
+          type: "string"
+          format: "date"
+  
+  GetPaymentResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      subscription_id: 
+        type: "integer"
+      amount:
+        type: "number"
+        format: "float"
+      payment_date: 
+        type: "string"
+        format: "date"
