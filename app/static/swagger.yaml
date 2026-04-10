@@ -19,6 +19,7 @@ securityDefinitions:
 paths: 
 
   /users/login: 
+
     post:
       tags: 
         - Users 
@@ -232,6 +233,7 @@ paths:
             $ref: "#/definitions/AllSubscriptions"
 
   /subscriptions/{id}: 
+
     get: 
       tags: 
         - Subscriptions 
@@ -312,6 +314,142 @@ paths:
           examples: 
             application/json: 
               message: "Successfully deleted subscription <subscription_id>"
+
+  /plans: 
+        
+    post: 
+      tags: 
+        - Plans 
+      summary: "Endpoint to create a new plan"
+      description: "Endpoint to create a new plan, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "body"
+          name: "body"
+          description: "Information required to create a new plan"
+          required: true
+          schema: 
+            $ref: "#/definitions/CreatePlanPayload"
+      responses: 
+        201: 
+          description: "Successful Plan Creation"
+          schema: 
+            $ref: "#/definitions/CreatePlanResponse"
+          examples: 
+            application/json: 
+              id: 1
+              name: "Verizon"
+              price: 75.00
+              billing_cycle: "monthly"
+
+    get: 
+      tags: 
+        - Plans 
+      summary: "Endpoint to get all plans"
+      description: "Returns paginated list of all plans, token authenticated, must be logged in"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "query"
+          name: "page"
+          type: "integer"
+          required: false
+          default: 1
+          description: "Page number" 
+        
+        - in: "query"
+          name: "per_page"
+          type: "integer"
+          required: false
+          default: 10
+          description: "Number of plans per page" 
+      responses: 
+        200: 
+          description: "Retrieved plans successfully"
+          schema: 
+            $ref: "#/definitions/AllPlans"
+
+  /plans/{id}: 
+
+    get: 
+      tags: 
+        - Plans 
+      summary: "Endpoint to get a specific plan"
+      description: "Returns a single plan by ID, token authenticated, must be logged in"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Plan ID" 
+      responses: 
+        200: 
+          description: "Retrieved plan successfully"
+          schema: 
+            $ref: "#/definitions/GetPlanResponse"
+          examples: 
+            application/json: 
+              id: 1
+              name: "Verizon"
+              price: 75.00
+              billing_cycle: "monthly"
+
+    put: 
+      tags: 
+        - Plans 
+      summary: "Endpoint to update a plan"
+      description: "Endpoint to update a plan, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Plan ID" 
+
+        - in: "body"
+          name: "body"
+          description: "Information required to update a plan"
+          required: true
+          schema: 
+            $ref: "#/definitions/UpdatePlanPayload"
+      responses: 
+        200: 
+          description: "Successfully updated plan"
+          schema: 
+            $ref: "#/definitions/UpdatePlanResponse"
+          examples: 
+            application/json: 
+              id: 1
+              name: "Verizon"
+              price: 75.00
+              billing_cycle: "monthly"
+
+    delete: 
+      tags: 
+        - Plans 
+      summary: "Endpoint to delete a plan"
+      description: "Endpoint to delete a plan, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Plan ID" 
+      responses: 
+        200: 
+          description: "Successfully deleted plan"
+          schema: 
+            $ref: "#/definitions/DeletePlanResponse"
+          examples: 
+            application/json: 
+              message: "Successfully deleted plan <plan_id>"
 
 definitions: 
 
@@ -523,4 +661,89 @@ definitions:
       message: 
         type: "string"
   
+  CreatePlanPayload: 
+    type: "object"
+    properties: 
+      name: 
+        type: "string"
+      price:
+        type: "number"
+        format: "float"
+      billing_cycle: 
+        type: "string"
+    
+    required: 
+      - name
+      - price 
+      - billing_cycle 
   
+  CreatePlanResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      name:
+        type: "string"
+      price: 
+        type: "number"
+        format: "float"
+      billing_cycle: 
+        type: "string"
+
+  AllPlans: 
+    type: "array"
+    items: 
+      type: "object"
+      properties: 
+        id: 
+          type: "integer"
+        name:
+          type: "string"
+        price: 
+          type: "number"
+          format: "float"
+        billing_cycle: 
+          type: "string"
+  
+  GetPlanResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      name:
+        type: "string"
+      price: 
+        type: "number"
+        format: "float"
+      billing_cycle: 
+        type: "string"
+
+  UpdatePlanPayload: 
+    type: "object"
+    properties: 
+      name:
+        type: "string"
+      price: 
+        type: "number"
+        format: "float"
+      billing_cycle: 
+        type: "string"
+
+  UpdatePlanResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      name:
+        type: "string"
+      price: 
+        type: "number"
+        format: "float"
+      billing_cycle: 
+        type: "string"
+  
+  DeletePlanResponse: 
+    type: "object"
+    properties: 
+      message: 
+        type: "string"
