@@ -532,6 +532,87 @@ paths:
               amount: 75.00
               payment_date: "2026-04-10"
 
+  /invoices: 
+    
+    post: 
+      tags: 
+        - Invoices 
+      summary: "Endpoint to create a new invoice"
+      description: "Endpoint to create a new invoice, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "body"
+          name: "body"
+          description: "Information required to create a new invoice"
+          required: true
+          schema: 
+            $ref: "#/definitions/CreateInvoicePayload"
+      responses: 
+        201: 
+          description: "Successful Invoice Creation"
+          schema: 
+            $ref: "#/definitions/CreateInvoiceResponse"
+          examples: 
+            application/json: 
+              id: 1
+              subscription_id: 1
+              amount: 75.00
+              issued_date: "2026-04-10"
+    get: 
+      tags: 
+        - Invoices 
+      summary: "Endpoint to get all invoices"
+      description: "Returns paginated list of all invoices, token authenticated, admin only"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "query"
+          name: "page"
+          type: "integer"
+          required: false
+          default: 1
+          description: "Page number" 
+        
+        - in: "query"
+          name: "per_page"
+          type: "integer"
+          required: false
+          default: 10
+          description: "Number of invoices per page" 
+      responses: 
+        200: 
+          description: "Retrieved invoices successfully"
+          schema: 
+            $ref: "#/definitions/AllInvoices"
+
+  /invoices/{id}: 
+    
+    get: 
+      tags: 
+        - Invoices 
+      summary: "Endpoint to get a specific invoice"
+      description: "Returns a single invoice by ID, token authenticated, must be admin or accessing their own invoice"
+      security: 
+        - bearerAuth: []
+      parameters: 
+        - in: "path"
+          name: "id"
+          type: "integer"
+          required: true
+          description: "Invoice ID" 
+      responses: 
+        200: 
+          description: "Retrieved invoice successfully"
+          schema: 
+            $ref: "#/definitions/GetInvoiceResponse"
+          examples: 
+            application/json: 
+              id: 1
+              subscription_id: 1
+              amount: 75.00
+              issued_date: "2026-04-10"
+
 definitions: 
 
   LoginCredentials: 
@@ -887,5 +968,66 @@ definitions:
         type: "number"
         format: "float"
       payment_date: 
+        type: "string"
+        format: "date"
+
+  CreateInvoicePayload: 
+    type: "object"
+    properties: 
+      subscription_id: 
+        type: "integer"
+      amount:
+        type: "number"
+        format: "float"
+      issued_date: 
+        type: "string"
+        format: "date"
+    
+    required: 
+      - subscription_id
+      - amount
+      - issued_date 
+  
+  CreateInvoiceResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      subscription_id: 
+        type: "integer"
+      amount:
+        type: "number"
+        format: "float"
+      issued_date: 
+        type: "string"
+        format: "date"
+
+  AllInvoices: 
+    type: "array"
+    items: 
+      type: "object"
+      properties: 
+        id: 
+          type: "integer"
+        subscription_id: 
+          type: "integer"
+        amount:
+          type: "number"
+          format: "float"
+        issued_date: 
+          type: "string"
+          format: "date"
+  
+  GetInvoiceResponse: 
+    type: "object"
+    properties: 
+      id: 
+        type: "integer"
+      subscription_id: 
+        type: "integer"
+      amount:
+        type: "number"
+        format: "float"
+      issued_date: 
         type: "string"
         format: "date"
